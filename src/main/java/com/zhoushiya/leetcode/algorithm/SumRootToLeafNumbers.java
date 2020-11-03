@@ -1,8 +1,11 @@
 package com.zhoushiya.leetcode.algorithm;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import sun.reflect.generics.tree.Tree;
+
+import java.awt.*;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -42,45 +45,82 @@ import java.util.List;
  * 因此，数字总和 = 495 + 491 + 40 = 1026.
  */
 public class SumRootToLeafNumbers {
+
     public int sumNumbers(TreeNode root) {
-
-
+        return dfs(root, 0);
     }
+
+    public int dfs(TreeNode root, int prevSum) {
+        if (root == null) {
+            return 0;
+        }
+        int sum = prevSum * 10 + root.val;
+        if (root.left == null && root.right == null) {
+            return sum;
+        } else {
+            // 左树之和 + 右树之和
+            return dfs(root.left, sum) + dfs(root.right, sum);
+        }
+    }
+
 
     /**
      * 遍历实现
      * @param pointer
      */
-    public void myMethod(TreeNode pointer) {
-        LinkedHashMap<TreeNode,Boolean> nodes =new LinkedHashMap<>();
-        List<Integer> combines=new LinkedList<>();
+    public static int myMethod(TreeNode pointer) {
+        if(pointer==null) return 0;
+        List<TreeNode> nodes =new LinkedList<>();
+        Stack<Integer> rightNoScanIndexes=new Stack<>();
+        List<Integer> numbers=new LinkedList<>();
 
         boolean rightNoScan=false;
+        int one=0;
+
         while(true){
+
             if(pointer.left!=null){
                 rightNoScan=pointer.right!=null;
-                nodes.put(pointer,rightNoScan);
+                nodes.add(pointer);
+                one = one*10+pointer.val;
+                if(rightNoScan){
+                    rightNoScanIndexes.push(nodes.size()-1);
+                }
                 pointer=pointer.left;
                 continue;
             }
 
             if(pointer.right!=null){
-                nodes.put(pointer,false);
+                nodes.add(pointer);
+                one = one*10+pointer.val;
                 pointer=pointer.right;
                 continue;
             }
 
-            nodes.put(pointer,false);
+            // 加入末级节点
+            nodes.add(pointer);
+
+            // 计算数值
+            one = one*10+pointer.val;
+            numbers.add(one);
+
+            if(rightNoScanIndexes.empty()){
+                break;
+            }
+
+            // 跳转到上一个未扫描的右节点
+            int returnIndex=rightNoScanIndexes.pop();
 
             int size=nodes.size();
-            int temp=0;
-            for (int i = 0; i < nodes.size(); i++) {
-                TreeNode treeNode = nodes.get
-                temp+= (Math.pow(10,size-i-1) * treeNode.val);
+            for (int i = size-1; i >returnIndex  ; i--) {
+                one=one/10;
+                nodes.remove(i);
             }
+
+            pointer=nodes.get(returnIndex).right;
 
         }
 
-
+        return numbers.stream().mapToInt(t->t).sum();
     }
 }
